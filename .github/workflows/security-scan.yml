@@ -1,0 +1,28 @@
+name: Security Scans
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y wget
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.49.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.49.1_Linux-64bit.deb
+
+      - name: Build and Scan Docker Image
+        run: |
+          docker build -t devsecops-app ./docker-app
+          trivy image devsecops-app
+
+      - name: Scan Terraform Configuration
+        run: trivy config terraform/
